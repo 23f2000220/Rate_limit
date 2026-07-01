@@ -1,2 +1,4 @@
-fastapi
-uvicorn[standard]
+fastapi==0.95.2
+uvicorn[standard]==0.22.0
+python-dotenv==1.0.0
+aiojobs==1.0.0
