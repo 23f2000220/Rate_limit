@@ -44,7 +44,7 @@ clients = defaultdict(deque)
 @app.middleware("http")
 async def app_middleware(request: Request, call_next):
     # ---------- Request ID ----------
-    request_id = request.headers.get("X-Request-ID")
+    request_id = request.headers.get("x-request-id")
     if not request_id:
         request_id = str(uuid.uuid4())
 
@@ -64,7 +64,7 @@ async def app_middleware(request: Request, call_next):
             status_code=429,
             content={"detail": "Rate limit exceeded"},
         )
-        response.headers["X-Request-ID"] = request_id
+        response.headers.append("X-Request-ID", request_id)
         return response
 
     bucket.append(now)
