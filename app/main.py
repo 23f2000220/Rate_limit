@@ -13,7 +13,7 @@ ALLOWED_ORIGINS = [
     "https://app-e4kt4p.example.com",
     # Also allow the exam page origin so the browser can reach /ping during verification.
     # Replace with the grader's origin if provided; keep this entry as an example allowed origin.
-    "https://verifier.example.com"
+    "https://exam.sanand.workers.dev/tds-2026-05-ga2"
 ]
 RATE_LIMIT_B = 11  # requests
 RATE_LIMIT_WINDOW_SECONDS = 10
