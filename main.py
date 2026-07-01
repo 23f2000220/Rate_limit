@@ -39,54 +39,42 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# ------------------------
-# Request Context Middleware
-# ------------------------
+clients = defaultdict(deque)
 
 @app.middleware("http")
-async def request_context(request: Request, call_next):
-
+async def app_middleware(request: Request, call_next):
+    # ---------- Request ID ----------
     request_id = request.headers.get("X-Request-ID")
-
     if not request_id:
         request_id = str(uuid.uuid4())
 
     request.state.request_id = request_id
 
-    response = await call_next(request)
-
-    response.headers["X-Request-ID"] = request_id
-
-    return response
-
-
-# ------------------------
-# Rate Limiter Middleware
-# ------------------------
-
-clients = defaultdict(deque)
-
-@app.middleware("http")
-async def rate_limiter(request: Request, call_next):
-
+    # ---------- Rate limiting ----------
     client = request.headers.get("X-Client-Id", "anonymous")
 
     now = time.time()
-
     bucket = clients[client]
 
     while bucket and now - bucket[0] > WINDOW:
         bucket.popleft()
 
     if len(bucket) >= RATE_LIMIT:
-        return JSONResponse(
+        response = JSONResponse(
             status_code=429,
             content={"detail": "Rate limit exceeded"},
         )
+        response.headers["X-Request-ID"] = request_id
+        return response
 
     bucket.append(now)
 
-    return await call_next(request)
+    # ---------- Continue ----------
+    response = await call_next(request)
+
+    response.headers["X-Request-ID"] = request_id
+
+    return response
 
 
 # ------------------------
